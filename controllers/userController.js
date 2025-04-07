@@ -31,12 +31,14 @@ export const loginUser = async (req, res) => {
   console.log("user: ", email, password);
   try {
     const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
-if (!user || !isMatch) {
-  return res.status(401).json({ message: 'Invalid email or password' });
-}
-
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
 
     // Generate JWT Token
     const token = jwt.sign(
@@ -44,10 +46,27 @@ if (!user || !isMatch) {
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
-    console.log("Token: ", token)
+    console.log("NEW TOKEN GENERATED WITH CURRENT SECRET:", token);
+    console.log("CURRENT JWT_SECRET:", process.env.JWT_SECRET);
     res.status(200).json({ message: 'Login successful', token, role: user.role });
 
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+export const getCurrentUser = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1]; // "Bearer <token>"
+    if (!token) return res.status(401).json({ message: 'No token provided' });
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id).select('-password'); // remove password
+
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(401).json({ message: 'Unauthorized', error: error.message });
   }
 };
