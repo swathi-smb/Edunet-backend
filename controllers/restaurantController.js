@@ -90,41 +90,43 @@ export const addDish = async (req, res) => {
   console.log("Decoded user:", req.user);
 
   if (!req.user || !req.user.id) {
-      return res.status(401).json({ message: "Unauthorized: No valid user ID" });
+    return res.status(401).json({ message: "Unauthorized: No valid user ID" });
   }
 
   try {
-      // Find the restaurant by vendor
-      const restaurant = await Restaurant.findOne({ vendor: req.user.id });
+    // Find the restaurant by vendor ID
+    const restaurant = await Restaurant.findOne({ vendor: req.user.id });
 
-      if (!restaurant) {
-          return res.status(404).json({ message: "Restaurant not found" });
-      }
+    if (!restaurant) {
+      return res.status(404).json({ message: "Restaurant not found" });
+    }
 
-      if (!req.file) {
-        return res.status(400).json({ message: "No image file provided" });
-      }
-      // Convert Windows backslashes to forward slashes and remove backend/ prefix
-      const imagePath = req.file.path.replace(/\\/g, '/').replace('backend/', '');
+    if (!req.file) {
+      return res.status(400).json({ message: "No image file provided" });
+    }
 
-      // Create a new dish object
-      const newDish = {
-          name: req.body.name,
-          description: req.body.description,
-          price: req.body.price,
-          image: imagePath, // Use correct image path
-      };
+    // Construct public image URL using Render's domain
+    const fileName = req.file.filename;
+    const baseUrl = process.env.RENDER_EXTERNAL_URL || "https://your-render-backend.onrender.com"; // fallback
+    const imagePath = `${baseUrl}/uploads/${fileName}`;
 
-      // Add the new dish to the restaurant's dishes array
-      restaurant.dishes.push(newDish);
-      await restaurant.save();
+    const newDish = {
+      name: req.body.name,
+      description: req.body.description,
+      price: req.body.price,
+      image: imagePath, // Public image URL
+    };
 
-      res.status(201).json({ message: "Dish added successfully", dish: newDish });
+    restaurant.dishes.push(newDish);
+    await restaurant.save();
+
+    res.status(201).json({ message: "Dish added successfully", dish: newDish });
   } catch (error) {
-      console.error("Error adding dish:", error);
-      res.status(500).json({ message: "Error adding dish", error });
+    console.error("Error adding dish:", error);
+    res.status(500).json({ message: "Error adding dish", error });
   }
 };
+
 
 
 // Delete a dish from the restaurant
