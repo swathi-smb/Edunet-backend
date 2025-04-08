@@ -3,6 +3,7 @@ import Vendor from '../models/Vendor.js';
 import mongoose from 'mongoose';
 import express from 'express';
 import dotenv from 'dotenv';
+import { API_PATH } from '../../frontend/src/path/apiPath.js';
 
 // Create a new restaurant
 export const createRestaurant = async (req, res) => {
@@ -205,7 +206,7 @@ export const getDishes = async (req, res) => {
       // Format dishes with proper image URLs
       const formattedDishes = restaurant.dishes.map(dish => ({
           ...dish.toObject(),
-          image: `http://localhost:3000/${dish.image.replace(/\\/g, "/")}`
+          image: `https://backend-q31y.onrender.com/${dish.image.replace(/\\/g, "/")}`
       }));
 
       res.json(formattedDishes || []);
