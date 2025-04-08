@@ -4,11 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
-  },
+  "start": "node index.js"
+},
+
   "dependencies": {
     "@tailwindcss/vite": "^4.0.15",
     "bcrypt": "^5.1.1",
