@@ -3,7 +3,7 @@ import Vendor from '../models/Vendor.js';
 import mongoose from 'mongoose';
 import express from 'express';
 import dotenv from 'dotenv';
-import { API_PATH } from '../../frontend/src/path/apiPath.js';
+// import { API_PATH } from '../../frontend/src/path/apiPath.js';
 
 // Create a new restaurant
 export const createRestaurant = async (req, res) => {
@@ -114,7 +114,7 @@ export const addDish = async (req, res) => {
       name: req.body.name,
       description: req.body.description,
       price: req.body.price,
-      image: imagePath, // Public image URL
+      image: imagePath,
     };
 
     restaurant.dishes.push(newDish);
