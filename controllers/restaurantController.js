@@ -107,8 +107,7 @@ export const addDish = async (req, res) => {
 
     // Construct public image URL using Render's domain
     const fileName = req.file.filename;
-    const baseUrl = process.env.RENDER_EXTERNAL_URL || "https://backend-q31y.onrender.com";
-    const imagePath = `${baseUrl}/uploads/${fileName}`;
+    const imagePath = `uploads/${fileName}`;
 
     const newDish = {
       name: req.body.name,
