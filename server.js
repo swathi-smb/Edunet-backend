@@ -31,8 +31,16 @@ if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-// Static files - serve from absolute path
-app.use('/uploads', express.static(uploadsDir));
+// Static files - serve from absolute path with proper error handling
+app.use('/uploads', (req, res, next) => {
+    const filePath = path.join(uploadsDir, req.path);
+    if (fs.existsSync(filePath)) {
+        express.static(uploadsDir)(req, res, next);
+    } else {
+        console.error(`File not found: ${filePath}`);
+        res.status(404).json({ message: 'File not found' });
+    }
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {

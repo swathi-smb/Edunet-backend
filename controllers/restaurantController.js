@@ -3,6 +3,8 @@ import Vendor from '../models/Vendor.js';
 import mongoose from 'mongoose';
 import express from 'express';
 import dotenv from 'dotenv';
+import path from 'path';
+import fs from 'fs';
 // import { API_PATH } from '../../frontend/src/path/apiPath.js';
 
 // Create a new restaurant
@@ -107,7 +109,8 @@ export const addDish = async (req, res) => {
 
     // Construct public image URL using Render's domain
     const fileName = req.file.filename;
-    const imagePath = `uploads/${fileName}`;
+    const baseUrl = process.env.RENDER_EXTERNAL_URL || "https://backend-q31y.onrender.com";
+    const imagePath = `${baseUrl}/uploads/${fileName}`;
 
     const newDish = {
       name: req.body.name,
@@ -118,6 +121,13 @@ export const addDish = async (req, res) => {
 
     restaurant.dishes.push(newDish);
     await restaurant.save();
+
+    // Verify the file exists after saving
+    const filePath = path.join(process.cwd(), 'uploads', fileName);
+    if (!fs.existsSync(filePath)) {
+      console.error(`File not found after save: ${filePath}`);
+      return res.status(500).json({ message: "Error saving image file" });
+    }
 
     res.status(201).json({ message: "Dish added successfully", dish: newDish });
   } catch (error) {
