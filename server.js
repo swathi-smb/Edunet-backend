@@ -7,6 +7,7 @@ import restaurantRoutes from './routes/restaurantRoutes.js';
 import vendorRoutes from './routes/vendorRoutes.js';
 import { fileURLToPath } from 'url';
 import path from 'path';
+import fs from 'fs';
 
 // Initialize __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -24,8 +25,26 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Static files
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Static files - serve from absolute path
+app.use('/uploads', express.static(uploadsDir));
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    if (err.name === 'MulterError') {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({ message: 'File size too large. Maximum size is 5MB.' });
+        }
+        return res.status(400).json({ message: err.message });
+    }
+    res.status(500).json({ message: 'Something went wrong!' });
+});
 
 // Routes
 app.use('/api/users', userRoutes);
@@ -34,8 +53,8 @@ app.use('/api/vendors', vendorRoutes);
 
 // Database connection
 mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
 })
 .then(() => console.log('✅ MongoDB Connected'))
 .catch((err) => console.error('❌ MongoDB Connection Error:', err));
